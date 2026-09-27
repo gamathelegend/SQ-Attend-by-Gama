@@ -124,6 +124,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       monthlySalary: 10000, // 10k default salary
       role: 'employee',
       hoursCompletedThisWeek: 0,
+      monthlyLateArrivalsCount: 0,
+      halfDaysCount: 0,
       avatarUrl: OFFICIAL_SELFIE_URL,
       biometricEnrolledDate: 'Registered • Ready for Verification',
       biometricConfidence: 99.2,

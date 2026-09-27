@@ -250,7 +250,7 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
       // Determine next state and status tag based on shift schedule (Morning 9-11 AM entry, Evening 6-9 PM exit)
       // Policy: Enter any time, exit any time (Zero lockout, all punches accepted)
       let nextState: 'Awaiting Morning' | 'Clocked In' | 'On Break' | 'Shift Complete' = 'Clocked In';
-      let tag: 'On Time' | 'Early' | 'Late' | 'Overtime' | 'Approved' | 'Holiday Duty' = 'On Time';
+      let tag: 'On Time' | 'Early' | 'Late' | 'Half Day' | 'Overtime' | 'Approved' | 'Holiday Duty' = 'On Time';
 
       const currentHour = now.getHours() + now.getMinutes() / 60;
 
@@ -280,6 +280,9 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
         } else {
           tag = 'Early'; // Flexi departure permitted
         }
+      } else if (selectedAction === 'half-day') {
+        nextState = 'Shift Complete';
+        tag = 'Half Day';
       }
 
       const isSunday = now.getDay() === 0;
@@ -334,6 +337,8 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
         ? 'Clock In'
         : selectedAction === 'clock-out'
         ? 'Clock Out'
+        : selectedAction === 'half-day'
+        ? 'Half-Day Departure'
         : selectedAction === 'break-start'
         ? 'Take Break'
         : 'Resume Shift';
@@ -932,7 +937,7 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
         </div>
       )}
 
-      {/* Outside Firm Tracking & 7:00 PM Auto Punch-Out Safeguard */}
+      {/* Outside Firm Tracking & 6:00 PM Auto Punch-Out Safeguard */}
       {!isInsideGeofence && punchState === 'Clocked In' && !fieldWorkSession?.isActive && !isAfternoonBreak && (
         <div className="flex items-center justify-between p-2.5 bg-rose-500/15 dark:bg-rose-950/60 border border-rose-400/40 rounded-xl text-xs text-rose-950 dark:text-rose-200">
           <div className="flex items-center gap-2 min-w-0 pr-2">
@@ -941,19 +946,19 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
             </span>
             <div className="flex flex-col min-w-0">
               <span className="font-bold text-[11px]">
-                Outside Firm: {outsideMinutes}m recorded
+                Outside Firm: {outsideMinutes}m / 60m Limit
               </span>
               <span className="text-[10px] text-rose-800 dark:text-rose-300">
-                Rule: Auto punch-out after 1 hour outside firm at/after 7:00 PM (19:00).
+                Rule: Outdoor limit is 1 hour. Auto punch-out executes at 6:00 PM (18:00) or when 1h outdoor limit is reached.
               </span>
             </div>
           </div>
           <button
             onClick={onSimulateAutoPunchOut}
             className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-mono-jb font-bold shrink-0 transition-colors shadow-2xs"
-            title="Simulate 1-hour outside firm at 7:00 PM auto punch-out"
+            title="Simulate 1-hour outdoor limit reached / 6:00 PM auto punch-out"
           >
-            Test 7PM Exit
+            Test 6PM Exit
           </button>
         </div>
       )}
@@ -967,14 +972,14 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="font-bold text-indigo-950 dark:text-indigo-200 text-[11px]">
-                Shift Target: {(user.dailyWorkingHours || 8.0).toFixed(1)} hrs
+                Shift: 9 AM – 6 PM ({(user.dailyWorkingHours || 9.0).toFixed(1)} hrs)
               </span>
               <span className="text-[10px] font-mono-jb text-indigo-600 dark:text-indigo-400">
                 ({Math.floor(completedMinutes / 60)}h {completedMinutes % 60}m done)
               </span>
             </div>
             <span className="text-[10px] text-indigo-800/80 dark:text-indigo-300/80 truncate">
-              Continuous alarm on shift end • Volume mute support
+              Mandatory 9 AM to 6 PM • Half-Day &amp; Overtime access
             </span>
           </div>
         </div>
@@ -983,7 +988,7 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
             onClick={onOpenWorkingHours}
             className="px-2 py-1 bg-white dark:bg-[#1a263c] border border-indigo-300 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200 text-[10px] font-mono-jb font-bold rounded-lg shadow-2xs hover:bg-indigo-50"
           >
-            Set Hours
+            Hours &amp; OT
           </button>
           <button
             onClick={onTriggerTestAlarm}
@@ -991,16 +996,16 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
             title="Simulate shift hours complete: triggers continuous beep with Shift End & Overtime options"
           >
             <span className="material-symbols-outlined text-[12px]">volume_up</span>
-            <span>Test Beep</span>
+            <span>Test Alarm</span>
           </button>
         </div>
       </div>
 
-      {/* Action Type Selector (Quick tab between Punch In, Break, Resume, Clock Out, and Firm Work) */}
+      {/* Action Type Selector (Punch In, Break, Half-Day, Clock Out, and Firm Work) */}
       <div className="flex items-center justify-center p-1 bg-[#eff4ff] dark:bg-[#131d2e] rounded-xl border border-[#d5e3fc]/80 dark:border-slate-800 gap-1 text-[11px] font-semibold transition-colors flex-wrap">
         <button
           onClick={() => setSelectedAction('clock-in')}
-          className={`flex-1 min-w-[58px] py-1.5 px-1.5 rounded-lg transition-all ${
+          className={`flex-1 min-w-[55px] py-1.5 px-1 rounded-lg transition-all ${
             selectedAction === 'clock-in'
               ? 'bg-[#00236f] dark:bg-[#1e3a8a] text-white shadow-xs font-bold'
               : 'text-[#444651] dark:text-slate-400 hover:text-[#00236f] dark:hover:text-slate-100'
@@ -1010,7 +1015,7 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
         </button>
         <button
           onClick={() => setSelectedAction('break-start')}
-          className={`flex-1 min-w-[50px] py-1.5 px-1.5 rounded-lg transition-all ${
+          className={`flex-1 min-w-[48px] py-1.5 px-1 rounded-lg transition-all ${
             selectedAction === 'break-start'
               ? 'bg-[#00236f] dark:bg-[#1e3a8a] text-white shadow-xs font-bold'
               : 'text-[#444651] dark:text-slate-400 hover:text-[#00236f] dark:hover:text-slate-100'
@@ -1019,18 +1024,19 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
           Break
         </button>
         <button
-          onClick={() => setSelectedAction('break-end')}
-          className={`flex-1 min-w-[55px] py-1.5 px-1.5 rounded-lg transition-all ${
-            selectedAction === 'break-end'
-              ? 'bg-[#00236f] dark:bg-[#1e3a8a] text-white shadow-xs font-bold'
-              : 'text-[#444651] dark:text-slate-400 hover:text-[#00236f] dark:hover:text-slate-100'
+          onClick={() => setSelectedAction('half-day')}
+          className={`flex-1 min-w-[58px] py-1.5 px-1 rounded-lg transition-all ${
+            selectedAction === 'half-day'
+              ? 'bg-amber-600 text-white shadow-xs font-bold'
+              : 'text-amber-800 dark:text-amber-300 hover:bg-amber-100/50'
           }`}
+          title="Clock out as Half Day"
         >
-          Resume
+          Half-Day
         </button>
         <button
           onClick={() => setSelectedAction('clock-out')}
-          className={`flex-1 min-w-[62px] py-1.5 px-1.5 rounded-lg transition-all ${
+          className={`flex-1 min-w-[58px] py-1.5 px-1 rounded-lg transition-all ${
             selectedAction === 'clock-out'
               ? 'bg-[#00236f] dark:bg-[#1e3a8a] text-white shadow-xs font-bold'
               : 'text-[#444651] dark:text-slate-400 hover:text-[#00236f] dark:hover:text-slate-100'
@@ -1040,15 +1046,15 @@ export const PunchScreen: React.FC<PunchScreenProps> = ({
         </button>
         <button
           onClick={onOpenFieldWork}
-          className={`flex-1 min-w-[68px] py-1.5 px-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 min-w-[62px] py-1.5 px-1 rounded-lg transition-all flex items-center justify-center gap-0.5 ${
             fieldWorkSession?.isActive
               ? 'bg-indigo-600 text-white shadow-xs font-bold'
               : 'text-[#444651] dark:text-slate-400 hover:text-indigo-600'
           }`}
-          title="Out for firm work (up to ~2 hours, counted in working time)"
+          title="Out for firm work (up to 1 hour outdoor limit, counted in work time)"
         >
           <span className="material-symbols-outlined text-[13px]">business_center</span>
-          <span>Firm Work</span>
+          <span>Field Work</span>
         </button>
       </div>
 

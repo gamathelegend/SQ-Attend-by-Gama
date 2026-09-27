@@ -5,6 +5,7 @@ export type PunchType =
   | 'break-end'
   | 'field-work-start'
   | 'field-work-end'
+  | 'half-day'
   | 'auto-clock-out';
 
 export type PunchState = 'Awaiting Morning' | 'Clocked In' | 'On Break' | 'Field Work' | 'Shift Complete';

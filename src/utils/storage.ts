@@ -22,9 +22,19 @@ const STORAGE_OVERTIME_MINUTES_KEY = 'sq_attend_overtime_minutes_v1';
 export function getStoredUsers(): UserProfile[] {
   const users = safeGetJSON<UserProfile[] | null>(STORAGE_USERS_KEY, null);
   if (users && Array.isArray(users) && users.length > 0) {
+    // Ensure all 5 admins and initial employees exist
+    const existingIds = new Set(users.map(u => u.employeeId || u.id));
+    const merged = [...users];
+    sampleEmployees.forEach(se => {
+      if (!existingIds.has(se.employeeId) && !existingIds.has(se.id)) {
+        merged.push(se);
+      }
+    });
+
     // Ensure all employees have 10k monthlySalary default, locked 9-6 shift, and late arrivals tracking
-    const normalized = users.map(u => ({
+    const normalized = merged.map(u => ({
       ...u,
+      dailyWorkingHours: u.dailyWorkingHours || 9.0,
       monthlySalary: typeof u.monthlySalary === 'number' && u.monthlySalary > 0 ? u.monthlySalary : 10000,
       monthlyLateArrivalsCount: typeof u.monthlyLateArrivalsCount === 'number' ? u.monthlyLateArrivalsCount : 0,
       halfDaysCount: typeof u.halfDaysCount === 'number' ? u.halfDaysCount : 0,
@@ -120,13 +130,11 @@ export function updateStoredEmployeeSalary(employeeId: string, newSalary: number
 }
 
 /**
- * Get currently logged in employee
+ * Get currently logged in employee (or null if on login page)
  */
 export function getActiveUser(): UserProfile | null {
   const user = safeGetJSON<UserProfile | null>(STORAGE_ACTIVE_USER_KEY, null);
-  if (user) return user;
-  const users = getStoredUsers();
-  return users[0] || null;
+  return user;
 }
 
 /**
@@ -293,7 +301,11 @@ export function calculateDistanceMeters(
 export function getStoredFirmSites(): GeofenceSite[] {
   const stored = safeGetJSON<GeofenceSite[] | null>(STORAGE_FIRM_SITES_KEY, null);
   if (stored && Array.isArray(stored) && stored.length > 0) {
-    return stored;
+    const normalized = stored.map(s => ({
+      ...s,
+      radiusMeters: 50, // 50m firm radius
+    }));
+    return normalized;
   }
   safeSetJSON(STORAGE_FIRM_SITES_KEY, initialSites);
   return initialSites;

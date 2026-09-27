@@ -1,5 +1,5 @@
 {
-  "name": "SQ Attend - Biometric Clock In",
+  "name": "SQ Attend - By Gama",
   "description": "Enterprise mobile biometric face attendance and geofenced punch-in system with live camera HUD, timesheet history, and verified location telemetry.",
   "requestFramePermissions": ["camera", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

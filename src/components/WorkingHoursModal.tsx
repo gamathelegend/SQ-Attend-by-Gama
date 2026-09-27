@@ -10,7 +10,7 @@ interface WorkingHoursModalProps {
   completedMinutes: number;
 }
 
-const PRESET_HOURS = [7.0, 7.5, 8.0, 8.5, 9.0, 10.0];
+const PRESET_HOURS = [4.5, 8.0, 9.0, 10.0, 11.0, 12.0];
 
 export const WorkingHoursModal: React.FC<WorkingHoursModalProps> = ({
   isOpen,
@@ -117,22 +117,30 @@ export const WorkingHoursModal: React.FC<WorkingHoursModalProps> = ({
 
         {/* Hour Presets */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-            Select Your Target Working Hours:
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Shift Target &amp; Overtime Options:
+            </label>
+            <span className="text-[10px] font-mono-jb text-blue-600 dark:text-blue-400 font-bold">
+              Standard: 9.0h (9 AM – 6 PM)
+            </span>
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {PRESET_HOURS.map((h) => (
               <button
                 key={h}
                 type="button"
                 onClick={() => handleSelectPreset(h)}
-                className={`py-2 px-1 text-xs font-mono-jb font-bold rounded-xl border transition-all active:scale-95 ${
+                className={`py-2 px-1 text-xs font-mono-jb font-bold rounded-xl border transition-all active:scale-95 flex flex-col items-center justify-center ${
                   selectedHours === h
                     ? 'bg-[#00236f] dark:bg-[#1e3a8a] text-white border-[#00236f] shadow-xs'
                     : 'bg-slate-50 dark:bg-[#162238] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
                 }`}
               >
-                {h.toFixed(1)} hrs
+                <span>{h.toFixed(1)} hrs</span>
+                <span className="text-[9px] opacity-80 font-normal">
+                  {h === 4.5 ? 'Half-Day' : h === 9.0 ? 'Full Shift' : h > 9.0 ? `+${(h - 9).toFixed(1)}h OT` : 'Flexible'}
+                </span>
               </button>
             ))}
           </div>

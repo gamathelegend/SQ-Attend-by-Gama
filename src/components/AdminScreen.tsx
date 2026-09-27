@@ -173,6 +173,60 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     setTimeout(() => setDownloadSuccess(false), 2500);
   };
 
+  // RESTRICTION: Employees cannot access other employee data or modify income. Only the 5 Admins can access it.
+  if (currentUserRole === 'employee') {
+    return (
+      <div className="flex flex-col w-full max-w-lg mx-auto px-4 pb-28 gap-4 animate-in fade-in duration-200">
+        <div className="p-6 bg-gradient-to-br from-rose-950 via-slate-900 to-[#0a1222] text-white rounded-3xl shadow-xl border border-rose-800/40 text-center flex flex-col items-center gap-3">
+          <div className="w-16 h-16 rounded-2xl bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
+            <span className="material-symbols-outlined text-[36px]">lock</span>
+          </div>
+          <div>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono-jb font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 uppercase">
+              Access Restricted • Firm Security
+            </span>
+            <h2 className="text-xl font-bold tracking-tight text-white mt-2">
+              Admin Clearance Required
+            </h2>
+            <p className="text-xs text-slate-300 mt-1 max-w-sm leading-relaxed">
+              Employees cannot access other employees' data or change salary income. Only the 5 authorized Firm Administrators and Owner have administrative clearance.
+            </p>
+          </div>
+
+          {/* List the 5 Authorized Admins */}
+          <div className="w-full bg-black/40 rounded-2xl p-3 border border-white/10 text-left mt-2 flex flex-col gap-2">
+            <span className="text-[10px] font-mono-jb uppercase text-slate-400 font-bold">
+              5 Authorized Firm Administrators:
+            </span>
+            <div className="grid grid-cols-1 gap-1.5 text-xs font-mono-jb">
+              {employees
+                .filter((e) => e.role === 'admin')
+                .slice(0, 5)
+                .map((admin, idx) => (
+                  <div
+                    key={admin.id || admin.employeeId}
+                    className="flex items-center justify-between p-1.5 rounded-lg bg-white/5 border border-white/5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-purple-500/30 text-purple-300 text-[10px] flex items-center justify-center font-bold">
+                        {idx + 1}
+                      </span>
+                      <span className="text-slate-200 font-semibold">{admin.name}</span>
+                    </div>
+                    <span className="text-purple-300 text-[10px]">{admin.employeeId}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          <div className="text-[11px] text-slate-400 mt-1">
+            As an employee, you can punch in/out, view your own history, and manage your overtime or half-day.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto px-4 pb-28 gap-4">
       {/* Master Admin Header Banner */}

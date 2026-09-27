@@ -140,11 +140,31 @@ export const ShiftDetailModal: React.FC<ShiftDetailModalProps> = ({
           </div>
 
           <div className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-[#1a263c] rounded-xl border border-slate-200 dark:border-slate-800">
+            <span className="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">radar</span>
+            <div>
+              <span className="font-bold text-[#0d1c2e] dark:text-white">Firm Perimeter: 50m Radius</span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Firm geofence boundary is set to 50 meters. Employees must be within this 50m zone to punch in on-site.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-[#1a263c] rounded-xl border border-slate-200 dark:border-slate-800">
+            <span className="material-symbols-outlined text-[18px] text-amber-600 mt-0.5">history_toggle_off</span>
+            <div>
+              <span className="font-bold text-[#0d1c2e] dark:text-white">Half-Day &amp; Overtime Allowed</span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Employees can punch Half-Day (morning or afternoon) or request authorized Overtime beyond 6:00 PM.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-[#1a263c] rounded-xl border border-slate-200 dark:border-slate-800">
             <span className="material-symbols-outlined text-[18px] text-rose-600 mt-0.5">timer_off</span>
             <div>
-              <span className="font-bold text-[#0d1c2e] dark:text-white">7:00 PM Evening Auto Punch-Out</span>
+              <span className="font-bold text-[#0d1c2e] dark:text-white">6:00 PM Evening Auto Punch-Out</span>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                If an employee is outside the firm for more than 1 hour at or after 7:00 PM, system clocks them out automatically.
+                Outdoor limit is 1 hour. If employee is outside the firm for 1 hour or after 6:00 PM without punch-out, system auto clocks out.
               </p>
             </div>
           </div>

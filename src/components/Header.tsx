@@ -6,6 +6,7 @@ interface HeaderProps {
   onOpenNotifications: () => void;
   onOpenProfile: () => void;
   onOpenAuth?: () => void;
+  onLogout?: () => void;
   userName?: string;
   avatarUrl: string;
   isOnline: boolean;
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNotifications,
   onOpenProfile,
   onOpenAuth,
+  onLogout,
   userName = 'Employee',
   avatarUrl,
   isOnline,
@@ -32,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'history':
         return 'History & Timesheets';
       case 'admin':
-        return 'Admin Portal • All Staff Data';
+        return 'Admin Portal • 5 Admins';
       case 'profile':
         return 'Profile & Settings';
     }
@@ -40,29 +42,26 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 w-full z-40 bg-[#f8f9ff]/90 dark:bg-[#0b1329]/95 backdrop-blur-xl border-b border-[#e6eeff]/80 dark:border-slate-800 shadow-[0_1px_8px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-colors">
-      <div className="h-16 px-4 max-w-lg mx-auto flex items-center justify-between">
-        {/* Brand Lockup: SQ Attend */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#00236f] dark:bg-[#1e3a8a] text-white shadow-sm border border-transparent dark:border-blue-500/30">
+      <div className="h-16 px-3.5 max-w-lg mx-auto flex items-center justify-between">
+        {/* Brand Lockup: SQ Attend - By Gama */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#00236f] dark:bg-[#1e3a8a] text-white shadow-sm border border-transparent dark:border-blue-500/30 shrink-0">
             <span className="material-symbols-outlined text-[20px] text-[#82f5c1]">fingerprint</span>
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-lg tracking-tight text-[#00236f] dark:text-white leading-none">
-                SQ Attend
-              </span>
-              <span className="font-mono-jb text-[10px] bg-[#e6eeff] dark:bg-[#162544] text-[#1e3a8a] dark:text-[#82f5c1] px-1.5 py-0.5 rounded font-semibold tracking-wider uppercase border border-transparent dark:border-blue-900/50">
-                PRO
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-sm sm:text-base tracking-tight text-[#00236f] dark:text-white leading-none truncate">
+                SQ Attend - By Gama
               </span>
             </div>
-            <span className="text-[12px] text-[#444651] dark:text-slate-300 leading-tight font-medium">
+            <span className="text-[11px] text-[#444651] dark:text-slate-300 leading-tight font-medium truncate">
               {getSubtext()}
             </span>
           </div>
         </div>
 
         {/* Action Controls & Network Status */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 shrink-0">
           {/* Auth Switcher Button */}
           {onOpenAuth && (
             <button
@@ -71,7 +70,18 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono-jb font-bold bg-[#e6eeff] dark:bg-[#162544] text-[#00236f] dark:text-[#82f5c1] hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-all border border-blue-200 dark:border-blue-800"
             >
               <span className="material-symbols-outlined text-[13px]">person</span>
-              <span className="max-w-[70px] truncate">{userName.split(' ')[0]}</span>
+              <span className="max-w-[50px] truncate">{userName.split(' ')[0]}</span>
+            </button>
+          )}
+
+          {/* Logout / Page 1 Switcher */}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              title="Sign Out to Login / Registration Page"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[17px]">logout</span>
             </button>
           )}
 

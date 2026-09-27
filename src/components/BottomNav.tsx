@@ -3,9 +3,10 @@ import React from 'react';
 interface BottomNavProps {
   activeTab: 'punch' | 'history' | 'admin' | 'profile';
   onChangeTab: (tab: 'punch' | 'history' | 'admin' | 'profile') => void;
+  currentUserRole?: 'admin' | 'owner' | 'employee';
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) => {
+export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab, currentUserRole }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 pb-safe bg-[#f8f9ff]/95 dark:bg-[#0b1329]/95 backdrop-blur-xl border-t border-[#e6eeff] dark:border-slate-800 shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_12px_rgba(0,0,0,0.35)] transition-colors">
       <div className="max-w-lg mx-auto flex justify-around items-center h-16 px-2">
@@ -71,7 +72,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) 
           </span>
         </button>
 
-        {/* Admin Tab (All Employees Data Access) */}
+        {/* Admin Tab (All Employees Data Access - 5 Admins & Owner) */}
         <button
           onClick={() => onChangeTab('admin')}
           className={`flex flex-col items-center justify-center gap-1 min-w-[62px] h-12 rounded-xl transition-all ${
@@ -87,14 +88,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) 
                 activeTab === 'admin' ? 'scale-110 font-bold' : ''
               }`}
             >
-              admin_panel_settings
+              {currentUserRole === 'employee' ? 'lock' : 'admin_panel_settings'}
             </span>
+            {currentUserRole === 'employee' && (
+              <span className="absolute -top-1 -right-1.5 px-1 bg-rose-500 text-white text-[8px] font-mono-jb rounded-full font-bold">
+                5 Admins
+              </span>
+            )}
             {activeTab === 'admin' && (
               <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#00236f] dark:bg-[#82f5c1]"></span>
             )}
           </div>
           <span
-            className={`text-[11px] leading-tight ${
+            className={`text-[11px] leading-tight flex items-center gap-0.5 ${
               activeTab === 'admin' ? 'font-bold' : 'font-medium'
             }`}
           >

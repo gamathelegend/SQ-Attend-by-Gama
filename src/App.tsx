@@ -52,11 +52,12 @@ import { AuthModal } from './components/AuthModal';
 import { WorkingHoursModal } from './components/WorkingHoursModal';
 import { SalaryCustomizationModal } from './components/SalaryCustomizationModal';
 import { EmployeeDataDetailModal } from './components/EmployeeDataDetailModal';
+import { LoginPage } from './components/LoginPage';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<'punch' | 'history' | 'admin' | 'profile'>('punch');
   const [allEmployees, setAllEmployees] = useState<UserProfile[]>(() => getStoredUsers());
-  const [profile, setProfile] = useState<UserProfile>(() => getActiveUser() || initialProfile);
+  const [profile, setProfile] = useState<UserProfile | null>(() => getActiveUser());
   const [sites, setSites] = useState<GeofenceSite[]>(() => getStoredFirmSites());
   const [activeSite, setActiveSite] = useState<GeofenceSite>(() => {
     const stored = getStoredFirmSites();
@@ -245,9 +246,9 @@ export default function App() {
 
   // Target working minutes: employee customizable dailyWorkingHours + any overtime
   const targetWorkingMinutes = useMemo(() => {
-    const baseHours = profile.dailyWorkingHours || 8.0;
+    const baseHours = profile?.dailyWorkingHours || 9.0;
     return Math.floor(baseHours * 60) + overtimeMinutes;
-  }, [profile.dailyWorkingHours, overtimeMinutes]);
+  }, [profile?.dailyWorkingHours, overtimeMinutes]);
 
   // Real-time Shift Hours Checker & Auto Punch-Out Monitoring Loop
   useEffect(() => {
@@ -256,11 +257,10 @@ export default function App() {
       const currentHour = now.getHours();
       const currentIsBreak = currentHour === 13;
 
-      // 1. Outside firm tracking logic
+      // 1. Outside firm tracking logic (Outdoor limit: 1 hour, auto punch-out at 6:00 PM)
       if (punchState === 'Clocked In' && !isInsideGeofence && !fieldWorkSession?.isActive) {
         if (currentIsBreak) {
           // 1:00 PM to 2:00 PM is official break time: going outside is calculated in break!
-          // Do not accumulate unauthorized outside time.
           setOutsideMinutes(0);
         } else {
           // Accumulate outside time
@@ -273,10 +273,10 @@ export default function App() {
           const mins = Math.floor((Date.now() - startTime) / (1000 * 60));
           setOutsideMinutes(mins);
 
-          // REQUIREMENT: If employee forgets to punch out, then after 1 hour outside of firm automatic punch out at/after 7:00 PM (19:00)
-          if (mins >= 60 && currentHour >= 19) {
+          // REQUIREMENT: Auto punch out after 1 hour outdoor limit, or at/after 6:00 PM (18:00)
+          if (mins >= 60 || (mins > 0 && currentHour >= 18)) {
             handleAutoPunchOut(
-              'Automatic Punch-Out: Employee outside firm over 1 hour after 7:00 PM evening without manual punch-out.'
+              'Automatic Punch-Out: Outdoor limit reached (1 hour outside firm) or 6:00 PM shift end.'
             );
           }
         }
@@ -485,13 +485,13 @@ export default function App() {
     setIsSuccessModalOpen(true);
   };
 
-  // Start official field work (~2 hours limit, counted in working time)
+  // Start official field work (1 hour outdoor limit, counted in working time)
   const handleStartFieldWork = (purpose: string) => {
     const session: FieldWorkSession = {
       isActive: true,
       startedAt: new Date().toISOString(),
       purpose,
-      allowedMinutes: 120, // ~2 hours limit
+      allowedMinutes: 60, // 1 hour outdoor limit
     };
     setFieldWorkSession(session);
     saveStoredFieldWorkSession(session);
@@ -629,7 +629,8 @@ export default function App() {
 
   // Save employee's customized daily working hours
   const handleSaveWorkingHours = (hours: number) => {
-    const updated = {
+    if (!profile) return;
+    const updated: UserProfile = {
       ...profile,
       dailyWorkingHours: hours,
       weeklyTargetHours: hours * 5,
@@ -657,8 +658,8 @@ export default function App() {
   const handleUpdateSalary = (employeeId: string, newSalary: number) => {
     const updated = updateStoredEmployeeSalary(employeeId, newSalary);
     setAllEmployees(updated);
-    if (profile.employeeId === employeeId || profile.id === employeeId) {
-      setProfile(prev => ({ ...prev, monthlySalary: newSalary }));
+    if (profile && (profile.employeeId === employeeId || profile.id === employeeId)) {
+      setProfile(prev => prev ? ({ ...prev, monthlySalary: newSalary }) : null);
     }
     const emp = updated.find(e => e.employeeId === employeeId);
     const notif: NotificationItem = {
@@ -695,7 +696,8 @@ export default function App() {
 
   const handleLogout = () => {
     saveActiveUser(null);
-    setIsAuthModalOpen(true);
+    setProfile(null);
+    setIsAuthModalOpen(false);
   };
 
   const handleMarkAllRead = () => {
@@ -704,6 +706,7 @@ export default function App() {
 
   const handleEnrollSuccess = () => {
     setProfile(prev => {
+      if (!prev) return null;
       const next = {
         ...prev,
         biometricEnrolledDate: 'Just now • Calibrated 3D Mesh',
@@ -713,6 +716,39 @@ export default function App() {
       return next;
     });
   };
+
+  // APP 1 PAGE: If not logged in, show ONLY Name and Login or Registration
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-start sm:py-6 transition-colors">
+        <div
+          className={`w-full max-w-[430px] min-h-screen sm:min-h-[890px] sm:max-h-[920px] sm:rounded-[36px] relative flex flex-col overflow-y-auto no-scrollbar transition-colors duration-200 ${
+            isDark
+              ? 'dark bg-[#0a0f1d] text-slate-100 border border-slate-800 shadow-[0_20px_60px_rgba(0,0,0,0.85)]'
+              : 'bg-[#f8f9ff] text-[#0d1c2e] border border-slate-700/60 sm:border-slate-800 shadow-2xl'
+          }`}
+        >
+          {/* Device Notch / Dynamic Island Bar */}
+          <div className="hidden sm:flex items-center justify-between px-6 pt-2 pb-1 text-[11px] font-mono-jb text-[#444651] dark:text-slate-400 z-50 select-none">
+            <span className="font-bold text-[#0d1c2e] dark:text-white">09:41</span>
+            <div className="w-20 h-4 bg-slate-900 dark:bg-black rounded-full flex items-center justify-center border border-slate-800/80">
+              <div className="w-2 h-2 rounded-full bg-slate-800 dark:bg-slate-900 mr-2"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-700 dark:bg-slate-800"></div>
+            </div>
+            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+              <span className="material-symbols-outlined text-[13px]">signal_cellular_4_bar</span>
+              <span className="material-symbols-outlined text-[13px]">
+                {effectiveOnline ? 'wifi' : 'wifi_off'}
+              </span>
+              <span className="material-symbols-outlined text-[15px]">battery_full</span>
+            </div>
+          </div>
+
+          <LoginPage onLoginSuccess={handleLoginSuccess} isDark={isDark} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-start sm:py-6 transition-colors">
@@ -740,13 +776,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* Top App Header: SQ Attend */}
+        {/* Top App Header: SQ Attend - By Gama */}
         <Header
           currentTab={currentTab}
           unreadCount={unreadCount}
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           onOpenProfile={() => setCurrentTab('profile')}
           onOpenAuth={() => setIsAuthModalOpen(true)}
+          onLogout={handleLogout}
           userName={profile.name}
           avatarUrl={profile.avatarUrl}
           isOnline={effectiveOnline}
@@ -889,6 +926,7 @@ export default function App() {
         <BottomNav
           activeTab={currentTab}
           onChangeTab={tab => setCurrentTab(tab)}
+          currentUserRole={profile.role || 'employee'}
         />
 
         {/* Modals & Overlays */}

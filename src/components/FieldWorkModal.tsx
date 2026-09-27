@@ -26,7 +26,7 @@ export const FieldWorkModal: React.FC<FieldWorkModalProps> = ({
   isFieldWorkActive,
   onEndFieldWork,
   elapsedMinutes = 0,
-  remainingMinutes = 120,
+  remainingMinutes = 60,
 }) => {
   const [selectedPurpose, setSelectedPurpose] = useState<string>(COMMON_PURPOSES[0]);
   const [customNote, setCustomNote] = useState<string>('');
@@ -87,10 +87,10 @@ export const FieldWorkModal: React.FC<FieldWorkModalProps> = ({
             </span>
           </div>
           <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-            Time spent outside for firm assignments is recorded as official work hours. The authorized outdoor duration limit is <strong className="text-indigo-950 dark:text-indigo-200 font-bold">approximately 2 hours (~120 min)</strong>.
+            Time spent outside for firm assignments is recorded as official work hours. The authorized outdoor duration limit is <strong className="text-indigo-950 dark:text-indigo-200 font-bold">1 hour (60 minutes)</strong>.
           </p>
           <div className="flex items-center justify-between text-[10px] font-mono-jb pt-1 border-t border-indigo-200/50 dark:border-indigo-800/40 text-indigo-900 dark:text-indigo-300">
-            <span>Outside Limit: <strong>~2.0 Hours</strong></span>
+            <span>Outdoor Limit: <strong>1.0 Hour (60m)</strong></span>
             <span>Geofence Block: <strong>Waived</strong></span>
           </div>
         </div>
